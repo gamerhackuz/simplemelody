@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="uz"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Melody Grid</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:#0b1120;color:white;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px}.grid{display:grid;grid-template-columns:repeat(8,40px);gap:4px;margin-bottom:15px}.note{width:40px;height:40px;background:#1e293b;border-radius:6px;cursor:pointer;transition:0.1s}.note.on{background:#f59e0b}.note.play{background:#10b981}label{font-size:13px;color:#94a3b8;align-self:center;margin-right:5px}.row{display:flex;align-items:center;gap:5px;margin-bottom:4px}button{padding:8px 16px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer}</style></head><body>
+<h2 style="color:#f59e0b;margin-bottom:10px">🎼 Melody Grid</h2><div id="rows"></div><button onclick="play()" id="playBtn">▶ Ijro etish</button>
+<script>
+const notes=[261.6,293.7,329.6,349.2,392.0];const names=['Do','Re','Mi','Fa','Sol'];let grid=Array(5).fill().map(()=>Array(8).fill(false));
+function render(){document.getElementById('rows').innerHTML=notes.map((n,i)=>`<div class="row"><label>${names[i]}</label>`+grid[i].map((v,j)=>`<div class="note ${v?'on':''}" onclick="toggle(${i},${j},this)"></div>`).join('')+'</div>').join('')}
+function toggle(r,c,el){grid[r][c]=!grid[r][c];el.classList.toggle('on')}
+let ctx,step=0,timer=null;function play(){
+if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
+document.getElementById('playBtn').textContent='⏹ To\'xtatish';document.getElementById('playBtn').onclick=stop;
+step=0;const bpm=180;timer=setInterval(()=>{
+document.querySelectorAll('.note').forEach(n=>n.classList.remove('play'));
+grid.forEach((r,i)=>{if(r[step]){document.querySelectorAll('.row')[i].children[step].classList.add('play');
+const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=notes[i];g.gain.setValueAtTime(0.2,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.15);o.start();o.stop(ctx.currentTime+0.2)}});
+step=(step+1)%8;},60000/bpm/4)}
+function stop(){clearInterval(timer);step=0;document.getElementById('playBtn').textContent='▶ Ijro etish';document.getElementById('playBtn').onclick=play;document.querySelectorAll('.note').forEach(n=>n.classList.remove('play'))}
+render()
+</script></body></html>
